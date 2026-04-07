@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+{% from "macros/icons.html" import icon_search, icon_star, icon_map_pin %}
+
+{% block title %}Dashboard — CrewHub{% endblock %}
+
+{% block content %}
+<section class="dashboard-section">
+    <div class="container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div>
+                <h1>Welcome, {{ user_data.get('full_name', 'User') }}!</h1>
+                <p class="dashboard-subtitle">
+                    {% if role == 'user' %}
+                        Find and connect with skilled workers in your area
+                    {% elif role == 'worker' %}
+                        Manage your profile and showcase your skills
+                    {% endif %}
+                </p>
+            </div>
+            <div class="dashboard-badge">
+                <span class="role-badge role-badge-{{ role }}">{{ role|upper }}</span>
+            </div>
+        </div>
+
+        <!-- ========== USER DASHBOARD ========== -->
+        {% if role == 'user' %}
+        <div class="dashboard-content">
+            <div class="dashboard-stats">
+                <div class="stat-card-dashboard">
+                    <h3>Your Pincode</h3>
+                    <p class="stat-value">{{ user_data.get('pincode', 'N/A') }}</p>
+                </div>
+                <div class="stat-card-dashboard">
+                    <h3>Email</h3>
+                    <p class="stat-value-small">{{ user_data.email }}</p>
+                </div>
+                <div class="stat-card-dashboard">
+                    <h3>Mobile</h3>
+                    <p class="stat-value-small">{{ user_data.mobile }}</p>
+                </div>
+            </div>
+
+            <div class="dashboard-actions">
+                <h2>Quick Actions</h2>
+                <div class="action-cards">
+                    <a href="{{ url_for('workers') }}" class="action-card">
+                        <div class="action-icon">{{ icon_search(36) }}</div>
+                        <h3>Find Workers</h3>
+                        <p>Search for workers by service type and location</p>
+                    </a>
+                </div>
+            </div>
+
+            <!-- User Appointments -->
+            <div class="appointments-section mt-4">
+                <h2>Your Appointments</h2>
+                {% if appointments %}
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Worker</th>
+                                <th>Service</th>
+                                <th>Date</th>
+                                <th>Time Slot</th>
+                                <th>Status</th>
+                                <th>Bill</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in appointments %}
+                            <tr>
+                                <td>{{ app.worker_name }}</td>
+                                <td>{{ app.service_type }}</td>
+                                <td>{{ app.date }}</td>
+                                <td>{{ app.get('time_slot', '—') }}</td>
+                                <td>
+                                    <span class="badge badge-{{ 'warning' if app.status == 'pending' else 'success' if app.status == 'accepted' else 'danger' if app.status == 'rejected' else 'info' }}">
+                                        {{ app.status|capitalize }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if app.get('bill_id') %}
+                                    <a href="{{ url_for('view_bill', bill_id=app.bill_id) }}" class="btn btn-outline-primary btn-xs">Show Bill</a>
+                                    {% elif app.status == 'completed' %}
+                                    <span class="text-muted small">Pending</span>
+                                    {% else %}
+                                    <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No appointments found.</p>
+                {% endif %}
+            </div>
+
+            {% if recent_workers %}
+            <div class="dashboard-workers mt-4">
+                <h2>Recently Registered Workers</h2>
+                <div class="workers-grid-small">
+                    {% for worker in recent_workers %}
+                    <div class="worker-card-small">
+                        <div class="worker-header-small">
+                            {% if worker.profile_photo %}
+                            <div class="worker-avatar" style="background-image: url('{% if worker.profile_photo and worker.profile_photo.startswith('http') %}{{ worker.profile_photo }}{% else %}{{ url_for('static', filename='uploads/' + (worker.profile_photo if worker.profile_photo else 'default.png')) }}{% endif %}'); background-size: cover; background-position: center; border: 2px solid var(--primary-100); color: transparent; overflow: hidden;"></div>
+                            {% else %}
+                            <div class="worker-avatar">{{ worker.full_name[0]|upper }}</div>
+                            {% endif %}
+                            <div>
+                                <h4>{{ worker.full_name }}</h4>
+                                <p class="worker-type">{{ worker.worker_type }}</p>
+                                <p class="worker-rating">{{ icon_star(14) }} {{ worker.rating|default('0.0') }} ({{ worker.total_reviews|default(0) }} reviews)</p>
+                            </div>
+                        </div>
+                        <p class="worker-location">{{ icon_map_pin(14) }} {{ worker.pincode }}</p>
+                        <div class="card-footer-actions">
+                            <a href="{{ url_for('worker_profile', worker_id=worker._id) }}" class="btn btn-secondary btn-small">View Profile</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- ========== WORKER DASHBOARD ========== -->
+        {% if role == 'worker' %}
+        <div class="dashboard-content">
+            <div class="dashboard-stats">
+                <div class="stat-card-dashboard">
+                    <h3>Service Type</h3>
+                    <p class="stat-value-small">{{ user_data.worker_type }}</p>
+                </div>
+                <div class="stat-card-dashboard">
+                    <h3>Rating</h3>
+                    <p class="stat-value">{{ icon_star(22) }} {{ user_data.get('rating', '0.0') }}</p>
+                </div>
+                <div class="stat-card-dashboard">
+                    <h3>Status</h3>
+                    <div class="status-toggle-wrapper">
+                        <p class="stat-value-small status-{{ 'active' if is_active else 'inactive' }}">
+                            {{ 'Active' if is_active else 'Inactive' }}
+                        </p>
+                        <a href="{{ url_for('toggle_status') }}" class="btn btn-primary btn-xs">Toggle</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manage Appointments -->
+            <div class="appointments-section mt-4">
+                <h2>Manage Appointments</h2>
+                {% if appointments %}
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Time Slot</th>
+                                <th>Contact Number</th>
+                                <th>Details</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in appointments %}
+                            <tr>
+                                <td><strong>{{ app.user_name }}</strong></td>
+                                <td>{{ app.date }}</td>
+                                <td>{{ app.get('time_slot', '—') }}</td>
+                                <td>
+                                    {% if app.get('user_mobile') and app.get('user_mobile') != 'N/A' %}
+                                        <a href="tel:{{ app.user_mobile }}" style="text-decoration:none; font-weight:500;">
+                                            📞 {{ app.user_mobile }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small>{{ app.details }}</small><br>
+                                    <small class="text-muted">{{ app.address }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge badge-{{ 'warning' if app.status == 'pending' else 'success' if app.status == 'accepted' else 'danger' if app.status == 'rejected' else 'info' }}">
+                                        {{ app.status|capitalize }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if app.status == 'pending' %}
+                                    <a href="{{ url_for('manage_appointment', app_id=app._id, status='accepted') }}" class="btn btn-success btn-xs">Accept</a>
+                                    <a href="{{ url_for('manage_appointment', app_id=app._id, status='rejected') }}" class="btn btn-danger btn-xs">Reject</a>
+                                    {% elif app.status == 'accepted' %}
+                                    <a href="{{ url_for('manage_appointment', app_id=app._id, status='completed') }}" class="btn btn-info btn-xs">Complete</a>
+                                    {% elif app.status == 'completed' %}
+                                        {% if app.get('bill_id') %}
+                                            <a href="{{ url_for('view_bill', bill_id=app.bill_id) }}" class="btn btn-outline-primary btn-xs">View Bill</a>
+                                            {% if not app.get('bill_paid') %}
+                                            <a href="{{ url_for('mark_paid', bill_id=app.bill_id) }}" class="btn btn-success btn-xs" style="margin-left:4px;">Mark Paid</a>
+                                            {% endif %}
+                                        {% else %}
+                                            <a href="{{ url_for('generate_bill', app_id=app._id) }}" class="btn btn-primary btn-xs">Generate Bill</a>
+                                        {% endif %}
+                                    {% else %}
+                                    <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No appointments found.</p>
+                {% endif %}
+            </div>
+
+            <!-- Recent Feedback -->
+            <div class="reviews-section mt-4">
+                <h2>Recent Feedback</h2>
+                {% if reviews %}
+                <div class="feedback-list">
+                    {% for review in reviews %}
+                    <div class="feedback-item card p-3 mb-2 border-0">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ review.user_name }}</strong>
+                            <span class="star-rating">
+                                {% for i in range(review.rating|int) %}{{ icon_star(14) }}{% endfor %}
+                            </span>
+                        </div>
+                        <p class="mb-0 text-muted mt-2">"{{ review.comment }}"</p>
+                        <small class="text-muted mt-1">{{ review.created_at.strftime('%d %b, %Y') }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No feedback yet.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

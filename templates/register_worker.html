@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Worker Registration - CrewHub{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+    <div class="container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>Register as Worker</h1>
+                <p>Join our platform and get discovered by customers</p>
+            </div>
+            
+            <form method="POST" action="{{ url_for('register_worker') }}" class="auth-form" onsubmit="return validateWorkerForm()">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="full_name">Full Name *</label>
+                        <input 
+                            type="text" 
+                            id="full_name" 
+                            name="full_name" 
+                            class="form-input" 
+                            placeholder="Enter your full name"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="mobile">Mobile Number *</label>
+                        <input 
+                            type="tel" 
+                            id="mobile" 
+                            name="mobile" 
+                            class="form-input" 
+                            placeholder="10-digit mobile number"
+                            pattern="[0-9]{10}"
+                            maxlength="10"
+                            required
+                        >
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        class="form-input" 
+                        placeholder="Enter your email"
+                        required
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="address">Address *</label>
+                    <textarea 
+                        id="address" 
+                        name="address" 
+                        class="form-input" 
+                        rows="3"
+                        placeholder="Enter your complete address"
+                        required
+                    ></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pincode">Pincode *</label>
+                        <input 
+                            type="text" 
+                            id="pincode" 
+                            name="pincode" 
+                            class="form-input" 
+                            placeholder="6-digit pincode"
+                            pattern="[0-9]{6}"
+                            maxlength="6"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="worker_type">Worker Type *</label>
+                        <select 
+                            id="worker_type" 
+                            name="worker_type" 
+                            class="form-input"
+                            required
+                        >
+                            <option value="">Select service type</option>
+                            {% for wtype in worker_types %}
+                            <option value="{{ wtype }}">{{ wtype }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="available_cities">Available in City * (Separate with spaces)</label>
+                    <input 
+                        type="text" 
+                        id="available_cities" 
+                        name="available_cities" 
+                        class="form-input" 
+                        placeholder="e.g. Mumbai Delhi Pune"
+                        required
+                    >
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="password">Password *</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            class="form-input" 
+                            placeholder="Minimum 6 characters"
+                            minlength="6"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm Password *</label>
+                        <input 
+                            type="password" 
+                            id="confirm_password" 
+                            name="confirm_password" 
+                            class="form-input" 
+                            placeholder="Re-enter password"
+                            minlength="6"
+                            required
+                        >
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-full">Create Worker Account</button>
+            </form>
+            
+            <div class="auth-footer">
+                <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+                <p><a href="{{ url_for('register') }}">← Back to role selection</a></p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function validateWorkerForm() {
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+    const mobile = document.getElementById('mobile').value;
+    const pincode = document.getElementById('pincode').value;
+    const workerType = document.getElementById('worker_type').value;
+    const cities = document.getElementById('available_cities').value;
+    
+    if (password !== confirmPassword) {
+        alert('Passwords do not match');
+        return false;
+    }
+    
+    if (password.length < 6) {
+        alert('Password must be at least 6 characters long');
+        return false;
+    }
+    
+    if (mobile.length !== 10 || !/^\d+$/.test(mobile)) {
+        alert('Please enter a valid 10-digit mobile number');
+        return false;
+    }
+    
+    if (pincode.length !== 6 || !/^\d+$/.test(pincode)) {
+        alert('Please enter a valid 6-digit pincode');
+        return false;
+    }
+    
+    if (!workerType) {
+        alert('Please select a worker type');
+        return false;
+    }
+    
+    if (!cities.trim()) {
+        alert('Please enter at least one city');
+        return false;
+    }
+    
+    return true;
+}
+</script>
+{% endblock %}

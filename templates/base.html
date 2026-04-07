@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CrewHub — Connect with verified service professionals near you. Find electricians, plumbers, carpenters and more.">
+    <title>{% block title %}CrewHub — Connect with Service Professionals{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="main-nav">
+        <div class="container">
+            <div class="nav-content">
+                <a href="{{ url_for('index') }}" class="logo" id="logo-home">
+                    <span class="logo-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </span>
+                    <span class="logo-crew">Crew</span><span class="logo-hub">Hub</span>
+                </a>
+
+                <div class="nav-links">
+                    {% if session.get('admin') %}
+                        <a href="{{ url_for('admin_dashboard') }}" class="nav-link" id="nav-admin">Dashboard</a>
+                        <a href="{{ url_for('admin_worker_requests') }}" class="nav-link" id="nav-requests" style="position: relative;">
+                            Requests 
+                            {% if pending_worker_count and pending_worker_count > 0 %}
+                            <span style="position: absolute; top: -4px; right: -8px; padding: 2px 6px; border-radius: 50%; background: #DC2626; color: white; font-size: 10px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">{{ pending_worker_count }}</span>
+                            {% endif %}
+                        </a>
+                        <a href="{{ url_for('manage_workers') }}" class="nav-link" id="nav-manage">Manage</a>
+                        <a href="{{ url_for('logout') }}" class="nav-link nav-link-logout" id="nav-logout">Logout</a>
+                    {% elif session.user_id %}
+                        <a href="{{ url_for('dashboard') }}" class="nav-link" id="nav-dashboard">Dashboard</a>
+                        {% if session.role == 'user' %}
+                        <a href="{{ url_for('workers') }}" class="nav-link" id="nav-workers">Find Workers</a>
+                        {% endif %}
+                        <a href="{{ url_for('logout') }}" class="nav-link nav-link-logout" id="nav-logout">Logout</a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="nav-link" id="nav-login">Login</a>
+                        <a href="{{ url_for('register') }}" class="nav-link nav-link-primary" id="nav-register">Register</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-container" id="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}" role="alert">
+                        <span>{{ message }}</span>
+                        <button class="flash-close" onclick="this.parentElement.remove()" aria-label="Close">&times;</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>CrewHub</h3>
+                    <p>Connecting communities with trusted service professionals since 2026.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('register') }}">Register</a></li>
+                        <li><a href="{{ url_for('login') }}">Login</a></li>
+                        {% if session.user_id %}
+                        <li><a href="{{ url_for('workers') }}">Find Workers</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>Email: support.crewhub@gmail.com</p>
+                    <p>Phone: +91 8421451134</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 CrewHub. Technology Commercialization &amp; Startup Development Project.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Global Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Modal functionality
+        document.addEventListener('click', function(event) {
+            const toggle = event.target.closest('[data-bs-toggle="modal"]');
+            if (toggle) {
+                const targetId = toggle.getAttribute('data-bs-target');
+                const modal = document.querySelector(targetId);
+                if (modal) modal.classList.add('show');
+            }
+            const dismiss = event.target.closest('[data-bs-dismiss="modal"]');
+            if (dismiss) {
+                const modal = dismiss.closest('.modal');
+                if (modal) modal.classList.remove('show');
+            }
+            if (event.target.classList.contains('modal') && event.target.classList.contains('show')) {
+                event.target.classList.remove('show');
+            }
+        });
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.show').forEach(m => m.classList.remove('show'));
+            }
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

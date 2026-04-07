@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - CrewHub{% endblock %}
+
+{% block content %}
+<section class="admin-dashboard py-5">
+    <div class="container">
+        <!-- Header area -->
+        <div class="d-flex justify-content-between align-items-center mb-5 admin-page-header">
+            <div>
+                <h1 class="h2 mb-1">Admin Dashboard</h1>
+                <p class="text-muted">Comprehensive platform overview and management</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('manage_workers') }}" class="btn btn-primary shadow-sm mr-2">Manage Workers</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">Logout</a>
+            </div>
+        </div>
+
+        <!-- Rich Stats Grid -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-6 col-xl-3">
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrapper bg-primary-soft">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Total Users</span>
+                        <span class="stat-value">{{ stats.total_users }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrapper bg-success-soft">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Total Workers</span>
+                        <span class="stat-value">{{ stats.total_workers }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrapper bg-warning-soft">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Active Workers</span>
+                        <span class="stat-value">{{ stats.active_workers }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrapper bg-danger-soft">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Banned Workers</span>
+                        <span class="stat-value">{{ stats.banned_workers }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Pending Reports - Now Full Width -->
+            <div class="col-12">
+                <div class="card border-0 shadow-sm overflow-hidden h-100">
+                    <div class="card-header-premium d-flex justify-content-between align-items-center">
+                        <h2 class="mb-0">Pending Reports</h2>
+                        {% if reports %}<span class="badge bg-danger text-white">{{ reports|length }} Pending</span>{% endif %}
+                    </div>
+                    <div class="card-body p-0">
+                        {% if reports %}
+                        <div class="table-responsive">
+                            <table class="table mb-0 align-middle">
+                                <thead>
+                                    <tr>
+                                        <th class="ps-4">Worker ID</th>
+                                        <th>Reason</th>
+                                        <th>Date</th>
+                                        <th class="text-end pe-4">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for report in reports %}
+                                    <tr>
+                                        <td class="ps-4"><code class="text-primary small fw-bold">{{ report.worker_id }}</code></td>
+                                        <td>{{ report.reason }}</td>
+                                        <td><span class="text-muted small">{{ report.created_at.strftime('%d %b, %Y') }}</span></td>
+                                        <td class="text-end pe-4">
+                                            <a href="{{ url_for('resolve_report', report_id=report._id) }}" class="btn btn-sm btn-outline-success">Resolve</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="py-5 text-center text-muted">
+                            <div class="mb-3">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-muted opacity-50"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            </div>
+                            <p class="mb-0 fw-medium">All reports are cleared!</p>
+                            <small>No pending worker reports to review.</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

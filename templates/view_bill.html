@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+{% from "macros/icons.html" import icon_arrow_left %}
+
+{% block title %}Invoice #{{ bill.invoice_number }} — CrewHub{% endblock %}
+
+{% block content %}
+<section class="dashboard-section">
+    <div class="container" style="max-width:760px;">
+        <div class="back-nav d-flex justify-content-between align-items-center" style="margin-bottom:20px;">
+            <a href="{{ url_for('dashboard') }}" class="back-link">{{ icon_arrow_left(18) }} Back to Dashboard</a>
+            <button onclick="window.print()" class="btn btn-outline-primary btn-sm no-print">Print Invoice</button>
+        </div>
+
+        <!-- Invoice Card -->
+        <div class="invoice-card" id="invoice">
+            <!-- Invoice Header -->
+            <div class="invoice-header">
+                <div class="invoice-logo">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:#fff;">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <div>
+                        <span class="invoice-brand">CrewHub</span>
+                        <span class="invoice-tagline">Service Marketplace</span>
+                    </div>
+                </div>
+                <div class="invoice-title-block">
+                    <h1 class="invoice-title">INVOICE</h1>
+                    <span class="invoice-number">#{{ '%05d' % bill.invoice_number }}</span>
+                </div>
+            </div>
+
+            <!-- Invoice Meta -->
+            <div class="invoice-meta">
+                <div class="invoice-meta-grid">
+                    <div class="invoice-meta-section">
+                        <h4>Bill To</h4>
+                        <p class="invoice-name">{{ bill.user_name }}</p>
+                        <p>{{ bill.user_mobile }}</p>
+                        <p>{{ bill.user_address }}</p>
+                    </div>
+                    <div class="invoice-meta-section">
+                        <h4>Service Provider</h4>
+                        <p class="invoice-name">{{ bill.worker_name }}</p>
+                        <p class="invoice-worker-id">ID: {{ bill.worker_id_display }}</p>
+                        <p>{{ bill.service_type }}</p>
+                    </div>
+                    <div class="invoice-meta-section">
+                        <h4>Invoice Details</h4>
+                        <p><strong>Date:</strong> {{ bill.created_at.strftime('%d %B, %Y') }}</p>
+                        <p><strong>Day:</strong> {{ bill.created_at.strftime('%A') }}</p>
+                        <p><strong>Invoice No:</strong> {{ '%05d' % bill.invoice_number }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoice Table -->
+            <div class="invoice-table-wrapper">
+                <table class="invoice-table">
+                    <thead>
+                        <tr>
+                            <th style="width:60px;">Sr. No.</th>
+                            <th>Service Description</th>
+                            <th style="width:120px;text-align:right;">Amount (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in bill['items'] %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ item.description }}</td>
+                            <td style="text-align:right; font-variant-numeric:tabular-nums;">{{ '%.2f' % item.amount }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="invoice-total-row">
+                            <td colspan="2" style="text-align:right;font-weight:800;font-size:16px;">Total</td>
+                            <td style="text-align:right;font-weight:800;font-size:18px;color:var(--primary);">₹ {{ '%.2f' % bill.total }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Invoice Footer -->
+            <div class="invoice-footer">
+                <div class="invoice-footer-note">
+                    <p><strong>Thank you for choosing CrewHub!</strong></p>
+                    <p>For any billing queries, contact us at support.crewhub@gmail.com</p>
+                </div>
+                {% if bill.get('paid') %}
+                <div class="invoice-stamp invoice-stamp-paid">
+                    <span>PAID</span>
+                </div>
+                {% else %}
+                <div class="invoice-stamp invoice-stamp-unpaid">
+                    <span>UNPAID</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+/* ===== INVOICE STYLES ===== */
+.invoice-card {
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,.08);
+    border: 1px solid var(--border);
+}
+
+/* Header */
+.invoice-header {
+    background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+    color: #fff;
+    padding: 36px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.invoice-logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.invoice-brand {
+    display: block;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -.5px;
+}
+.invoice-tagline {
+    display: block;
+    font-size: 12px;
+    opacity: .7;
+    font-weight: 500;
+}
+.invoice-title-block { text-align: right; }
+.invoice-title {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    margin-bottom: 4px;
+}
+.invoice-number {
+    font-size: 14px;
+    opacity: .8;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Meta */
+.invoice-meta { padding: 32px 40px; border-bottom: 1px solid var(--border); }
+.invoice-meta-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+.invoice-meta-section h4 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text-muted);
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+.invoice-meta-section p { font-size: 14px; color: var(--text-secondary); margin-bottom: 4px; line-height: 1.5; }
+.invoice-name { font-weight: 700; color: var(--text) !important; font-size: 16px !important; }
+.invoice-worker-id { font-family: monospace; font-size: 12px !important; color: var(--text-muted) !important; }
+
+/* Table */
+.invoice-table-wrapper { padding: 0 40px; }
+.invoice-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+.invoice-table thead th {
+    padding: 16px 14px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--text-muted);
+    font-weight: 700;
+    border-bottom: 2px solid var(--border);
+    text-align: left;
+}
+.invoice-table tbody td {
+    padding: 14px;
+    font-size: 14px;
+    color: var(--text);
+    border-bottom: 1px solid var(--gray-100);
+}
+.invoice-table tbody tr:hover { background: var(--gray-50); }
+.invoice-total-row td {
+    padding: 20px 14px !important;
+    border-top: 2px solid var(--gray-800) !important;
+    border-bottom: none !important;
+    background: var(--gray-50);
+}
+
+/* Footer */
+.invoice-footer {
+    padding: 28px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border);
+    background: var(--gray-50);
+}
+.invoice-footer-note p { font-size: 13px; color: var(--text-secondary); margin-bottom: 2px; }
+.invoice-footer-note p:first-child { font-size: 14px; }
+.invoice-stamp {
+    width: 80px; height: 80px;
+    border: 3px solid var(--success);
+    color: var(--success);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    transform: rotate(-15deg);
+    opacity: .8;
+}
+.invoice-stamp-unpaid {
+    border-color: #DC2626 !important;
+    color: #DC2626 !important;
+}
+
+/* Print Styles — preserve exact web design */
+@media print {
+    /* Force print backgrounds and colors */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+
+    /* Hide non-invoice elements */
+    .no-print, .navbar, .footer, .back-nav, .flash-container { display: none !important; }
+    .main-content { padding-top: 0 !important; }
+    .dashboard-section { padding: 0 !important; }
+    body { background: #fff !important; margin: 0; }
+
+    /* Keep invoice card styling */
+    .invoice-card {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        border-radius: 0 !important;
+        page-break-inside: avoid;
+    }
+
+    /* Keep gradient header */
+    .invoice-header {
+        background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%) !important;
+        color: #fff !important;
+    }
+    .invoice-header svg { color: #fff !important; }
+    .invoice-brand, .invoice-tagline, .invoice-title, .invoice-number { color: #fff !important; }
+
+    /* Keep table zebra and total row */
+    .invoice-total-row td {
+        background: #f8fafc !important;
+        border-top: 2px solid #1e293b !important;
+    }
+
+    /* Keep footer background */
+    .invoice-footer { background: #f8fafc !important; }
+
+    /* Keep Stamps */
+    .invoice-stamp {
+        border-color: #059669 !important;
+        color: #059669 !important;
+    }
+    .invoice-stamp.invoice-stamp-unpaid {
+        border-color: #DC2626 !important;
+        color: #DC2626 !important;
+    }
+
+    /* Total color */
+    .invoice-total-row td:last-child { color: #4F46E5 !important; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .invoice-header { flex-direction: column; gap: 20px; text-align: center; padding: 28px 24px; }
+    .invoice-title-block { text-align: center; }
+    .invoice-meta { padding: 24px; }
+    .invoice-meta-grid { grid-template-columns: 1fr; gap: 20px; }
+    .invoice-table-wrapper { padding: 0 16px; }
+    .invoice-footer { flex-direction: column; gap: 20px; text-align: center; padding: 24px; }
+}
+</style>
+{% endblock %}

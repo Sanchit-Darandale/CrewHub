@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}User Registration - CrewHub{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+    <div class="container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>Register as User</h1>
+                <p>Create your account to find service professionals</p>
+            </div>
+            
+            <form method="POST" action="{{ url_for('register_user') }}" class="auth-form" onsubmit="return validateUserForm()">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="full_name">Full Name *</label>
+                        <input 
+                            type="text" 
+                            id="full_name" 
+                            name="full_name" 
+                            class="form-input" 
+                            placeholder="Enter your full name"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="mobile">Mobile Number *</label>
+                        <input 
+                            type="tel" 
+                            id="mobile" 
+                            name="mobile" 
+                            class="form-input" 
+                            placeholder="10-digit mobile number"
+                            pattern="[0-9]{10}"
+                            maxlength="10"
+                            required
+                        >
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        class="form-input" 
+                        placeholder="Enter your email"
+                        required
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="address">Address *</label>
+                    <textarea 
+                        id="address" 
+                        name="address" 
+                        class="form-input" 
+                        rows="3"
+                        placeholder="Enter your complete address"
+                        required
+                    ></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pincode">Pincode *</label>
+                    <input 
+                        type="text" 
+                        id="pincode" 
+                        name="pincode" 
+                        class="form-input" 
+                        placeholder="6-digit pincode"
+                        pattern="[0-9]{6}"
+                        maxlength="6"
+                        required
+                    >
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="password">Password *</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            class="form-input" 
+                            placeholder="Minimum 6 characters"
+                            minlength="6"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm Password *</label>
+                        <input 
+                            type="password" 
+                            id="confirm_password" 
+                            name="confirm_password" 
+                            class="form-input" 
+                            placeholder="Re-enter password"
+                            minlength="6"
+                            required
+                        >
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+            </form>
+            
+            <div class="auth-footer">
+                <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+                <p><a href="{{ url_for('register') }}">← Back to role selection</a></p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function validateUserForm() {
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+    const mobile = document.getElementById('mobile').value;
+    const pincode = document.getElementById('pincode').value;
+    
+    if (password !== confirmPassword) {
+        alert('Passwords do not match');
+        return false;
+    }
+    
+    if (password.length < 6) {
+        alert('Password must be at least 6 characters long');
+        return false;
+    }
+    
+    if (mobile.length !== 10 || !/^\d+$/.test(mobile)) {
+        alert('Please enter a valid 10-digit mobile number');
+        return false;
+    }
+    
+    if (pincode.length !== 6 || !/^\d+$/.test(pincode)) {
+        alert('Please enter a valid 6-digit pincode');
+        return false;
+    }
+    
+    return true;
+}
+</script>
+{% endblock %}

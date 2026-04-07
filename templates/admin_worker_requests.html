@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% from "macros/icons.html" import icon_clipboard %}
+
+{% block title %}Worker Verification Requests - CrewHub{% endblock %}
+
+{% block content %}
+<section class="admin-manage-workers py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h2">Worker Verification Requests</h1>
+                <p class="text-muted">Review verification documents and approve or reject worker accounts</p>
+            </div>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">Back to Dashboard</a>
+        </div>
+
+        {% if pending_workers %}
+        <div class="table-container bg-white rounded shadow-sm">
+            <table class="table mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Date Applied</th>
+                        <th>Name</th>
+                        <th>Contact</th>
+                        <th>Service Type</th>
+                        <th>Documents</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for worker in pending_workers %}
+                    <tr>
+                        <td class="align-middle text-muted small">{{ worker.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td class="align-middle"><strong>{{ worker.full_name }}</strong></td>
+                        <td class="align-middle text-muted small">
+                            <span class="text-dark">{{ worker.email }}</span><br>
+                            {{ worker.mobile }}<br>
+                            <span style="font-size: 11px;">{{ worker.address }}, {{ worker.pincode }}</span>
+                        </td>
+                        <td class="align-middle">
+                            <span class="badge bg-secondary">{{ worker.worker_type }}</span>
+                        </td>
+                        <td class="align-middle">
+                            <div class="d-flex flex-column gap-1">
+                                {% if worker.aadhar_file %}
+                                <a href="{% if worker.aadhar_file and worker.aadhar_file.startswith('http') %}{{ worker.aadhar_file }}{% else %}{{ url_for('static', filename='uploads/documents/' + worker.aadhar_file) }}{% endif %}" target="_blank" class="btn btn-sm btn-outline-info" style="font-size:11px; padding:2px 8px;">View Aadhar</a>
+                                {% else %}
+                                <span class="text-danger small">Missing Aadhar</span>
+                                {% endif %}
+
+                                {% if worker.certificate_file %}
+                                <a href="{% if worker.certificate_file and worker.certificate_file.startswith('http') %}{{ worker.certificate_file }}{% else %}{{ url_for('static', filename='uploads/documents/' + worker.certificate_file) }}{% endif %}" target="_blank" class="btn btn-sm btn-outline-info" style="font-size:11px; padding:2px 8px;">View Certificate</a>
+                                {% else %}
+                                <span class="text-danger small">Missing Cert</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="align-middle text-end">
+                            <div class="d-flex justify-content-end gap-2">
+                                <form action="{{ url_for('approve_worker', worker_id=worker._id) }}" method="POST" style="margin:0;">
+                                    <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                </form>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="openRejectModal('{{ worker._id }}', '{{ worker.full_name }}')">
+                                    Reject
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="card border-0 shadow-sm text-center py-5">
+            <div class="card-body">
+                <div class="mb-3 text-muted" style="color:var(--gray-300);">
+                    {{ icon_clipboard(48) }}
+                </div>
+                <h4 class="h5">No pending requests</h4>
+                <p class="text-muted">There are currenty no worker accounts waiting for verification.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Reject Modal -->
+<div class="modal" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true" style="display: none; background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius:var(--radius); border:none; box-shadow:0 10px 40px rgba(0,0,0,0.1);">
+            <div class="modal-header" style="border-bottom:1px solid var(--border);">
+                <h5 class="modal-title" id="rejectModalLabel" style="font-weight:700;">Reject <span id="rejectWorkerName" class="text-primary"></span></h5>
+                <button type="button" class="btn-close" aria-label="Close" onclick="closeRejectModal()" style="background:none; border:none; font-size:24px; cursor:pointer;">&times;</button>
+            </div>
+            <form id="rejectForm" method="POST" action="">
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">Provide a reason for rejecting this verification. This will be emailed to the worker.</p>
+                    <div class="form-group mb-0">
+                        <label class="form-label" for="rejectRemark">Rejection Remark</label>
+                        <textarea class="form-control" name="remark" id="rejectRemark" rows="3" required placeholder="e.g. Invalid document uploaded or mismatched names..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid var(--border); padding:16px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeRejectModal()">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Custom styles inside to force visibility -->
+
+<style>
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1050;
+        display: none;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        outline: 0;
+    }
+    .modal.show {
+        display: block;
+    }
+    .modal-dialog {
+        position: relative;
+        width: auto;
+        margin: 40px auto;
+        max-width: 500px;
+        pointer-events: auto;
+    }
+    .modal-content {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        pointer-events: auto;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid rgba(0,0,0,.2);
+        border-radius: .3rem;
+        outline: 0;
+    }
+    .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .modal-body {
+        position: relative;
+        flex: 1 1 auto;
+        padding: 1.5rem 1rem;
+    }
+    .modal-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 1rem;
+        border-top: 1px solid #dee2e6;
+        gap: 8px;
+    }
+</style>
+
+<script>
+    function openRejectModal(workerId, workerName) {
+        document.getElementById('rejectWorkerName').textContent = workerName;
+        document.getElementById('rejectForm').action = "/admin/reject_worker/" + workerId;
+        const modal = document.getElementById('rejectModal');
+        modal.style.display = 'block';
+        modal.style.opacity = '1';
+        modal.classList.add('show');
+    }
+
+    function closeRejectModal() {
+        const modal = document.getElementById('rejectModal');
+        modal.style.display = 'none';
+        modal.style.opacity = '0';
+        modal.classList.remove('show');
+        document.getElementById('rejectForm').reset();
+    }
+</script>
+{% endblock %}

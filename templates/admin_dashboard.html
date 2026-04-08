@@ -79,20 +79,37 @@
                             <table class="table mb-0 align-middle">
                                 <thead>
                                     <tr>
-                                        <th class="ps-4">Worker ID</th>
-                                        <th>Reason</th>
+                                        <th class="ps-4">Reporter Info</th>
+                                        <th>Worker Info</th>
+                                        <th>Reason / Evidence</th>
                                         <th>Date</th>
-                                        <th class="text-end pe-4">Action</th>
+                                        <th class="text-end pe-4">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for report in reports %}
                                     <tr>
-                                        <td class="ps-4"><code class="text-primary small fw-bold">{{ report.worker_id }}</code></td>
-                                        <td>{{ report.reason }}</td>
+                                        <td class="ps-4">
+                                            <div class="fw-bold text-dark">{{ report.customer_name or 'N/A' }}</div>
+                                            <div class="small text-muted">{{ report.customer_mobile or 'N/A' }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="fw-bold text-dark">{{ report.worker_name or 'N/A' }}</div>
+                                            <div class="small text-muted">{{ report.worker_mobile or 'N/A' }}</div>
+                                            <div class="x-small text-primary fw-bold">{{ report.worker_id }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="mb-1">{{ report.reason }}</div>
+                                            {% if report.evidence_url %}
+                                            <a href="{{ report.evidence_url }}" target="_blank" class="btn btn-xs btn-outline-info">View Evidence ↗</a>
+                                            {% endif %}
+                                        </td>
                                         <td><span class="text-muted small">{{ report.created_at.strftime('%d %b, %Y') }}</span></td>
                                         <td class="text-end pe-4">
-                                            <a href="{{ url_for('resolve_report', report_id=report._id) }}" class="btn btn-sm btn-outline-success">Resolve</a>
+                                            <div class="d-flex gap-2 justify-content-end">
+                                                <a href="{{ url_for('resolve_report', report_id=report._id) }}" class="btn btn-xs btn-success">Resolve</a>
+                                                <button class="btn btn-xs btn-danger" data-bs-toggle="modal" data-bs-target="#banModal{{ report.worker_id }}">Ban</button>
+                                            </div>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -113,6 +130,39 @@
             </div>
         </div>
         </div>
+
+        <!-- Ban Modals -->
+        {% for report in reports %}
+        <div class="modal fade" id="banModal{{ report.worker_id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ban Worker: {{ report.worker_name }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="{{ url_for('ban_worker', worker_id=report.worker_id, ban=1) }}" method="POST">
+                        <div class="modal-body">
+                            <p class="small text-muted mb-3">Specify the duration of the ban. After this period, the worker will be eligible to log in again.</p>
+                            <div class="mb-3">
+                                <label class="form-label">Ban Duration (Days)</label>
+                                <select name="duration_days" class="form-select" required>
+                                    <option value="1">1 Day</option>
+                                    <option value="3">3 Days</option>
+                                    <option value="7">1 Week</option>
+                                    <option value="30">1 Month</option>
+                                    <option value="0">Permanent</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger">Confirm Ban</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
     </div>
 </section>
 {% endblock %}

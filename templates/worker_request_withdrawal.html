@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Request Withdrawal - CrewHub Worker{% endblock %}
+
+{% block content %}
+<section class="request-withdrawal py-5">
+    <div class="container">
+        <div class="auth-card" style="max-width: 650px;">
+            <div class="auth-header">
+                <h1 class="h2">Request Payout</h1>
+                <p class="text-muted">Enter your payment details for secure transfer</p>
+            </div>
+
+            <!-- Summary Table -->
+            <div class="p-4 bg-light rounded-lg mb-5">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Current Earnings:</span>
+                    <span class="fw-bold">₹{{ "%.2f"|format(current_balance) }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Platform Fee ({{ config['PLATFORM_FEE_PERCENTAGE'] }}%):</span>
+                    <span class="text-danger">₹{{ "%.2f"|format(platform_fee) }}</span>
+                </div>
+                <div class="d-flex justify-content-between pt-2 border-top border-2 border-white">
+                    <span class="fw-bold">Total Payout Amount:</span>
+                    <span class="h4 mb-0 fw-800 text-primary">₹{{ "%.2f"|format(final_amount) }}</span>
+                </div>
+            </div>
+
+            <form action="{{ url_for('worker_request_withdrawal') }}" method="POST" class="auth-form">
+                <div class="mb-4">
+                    <label class="form-label">Payment Method</label>
+                    <div class="role-switcher w-100" style="max-width: 100%;">
+                        <button type="button" id="btn-bank" class="btn active" onclick="switchMethod('bank')">
+                            Bank Transfer
+                        </button>
+                        <button type="button" id="btn-upi" class="btn" onclick="switchMethod('upi')">
+                            UPI
+                        </button>
+                    </div>
+                    <input type="hidden" name="method" id="payment_method" value="bank">
+                </div>
+
+                <!-- Bank Fields -->
+                <div id="bank-fields">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Account Holder Name</label>
+                        <input type="text" name="bank_name" class="form-control" placeholder="Enter Full Name" required>
+                    </div>
+                    <div class="form-row mb-3">
+                        <div class="form-group">
+                            <label class="form-label">Account Number</label>
+                            <input type="text" name="account_no" class="form-control" placeholder="Enter Account Number">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">IFSC Code</label>
+                            <input type="text" name="ifsc" class="form-control" placeholder="HDFC0001234">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- UPI Fields -->
+                <div id="upi-fields" style="display: none;">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Account Holder Name</label>
+                        <input type="text" name="upi_name" class="form-control" placeholder="Enter Full Name">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">UPI ID</label>
+                        <input type="text" name="upi_id" class="form-control" placeholder="name@upi / 9876543210@ybl">
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg btn-full shadow-sm">Submit Withdrawal Request</button>
+                    <a href="{{ url_for('worker_salary') }}" class="btn btn-link btn-full mt-2 text-muted x-small">Cancel and Go Back</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+{% block scripts %}
+<script>
+    function switchMethod(method) {
+        document.getElementById('payment_method').value = method;
+        const btnBank = document.getElementById('btn-bank');
+        const btnUpi = document.getElementById('btn-upi');
+        const bankFields = document.getElementById('bank-fields');
+        const upiFields = document.getElementById('upi-fields');
+        
+        const bankInputs = bankFields.querySelectorAll('input');
+        const upiInputs = upiFields.querySelectorAll('input');
+
+        if (method === 'bank') {
+            btnBank.classList.add('active');
+            btnUpi.classList.remove('active');
+            bankFields.style.display = 'block';
+            upiFields.style.display = 'none';
+            
+            bankInputs.forEach(i => i.required = true);
+            upiInputs.forEach(i => i.required = false);
+        } else {
+            btnBank.classList.remove('active');
+            btnUpi.classList.add('active');
+            bankFields.style.display = 'none';
+            upiFields.style.display = 'block';
+            
+            bankInputs.forEach(i => i.required = false);
+            upiInputs.forEach(i => i.required = true);
+        }
+    }
+</script>
+{% endblock %}
+{% endblock %}

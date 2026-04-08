@@ -24,21 +24,44 @@
                     <span class="logo-crew">Crew</span><span class="logo-hub">Hub</span>
                 </a>
 
-                <div class="nav-links">
+                <div class="nav-links" id="nav-links">
                     {% if session.get('admin') %}
-                        <a href="{{ url_for('admin_dashboard') }}" class="nav-link" id="nav-admin">Dashboard</a>
+                        <a href="{{ url_for('admin_dashboard') }}" class="nav-link" id="nav-admin">Home</a>
                         <a href="{{ url_for('admin_worker_requests') }}" class="nav-link" id="nav-requests" style="position: relative;">
-                            Requests 
+                            Verify 
                             {% if pending_worker_count and pending_worker_count > 0 %}
-                            <span style="position: absolute; top: -4px; right: -8px; padding: 2px 6px; border-radius: 50%; background: #DC2626; color: white; font-size: 10px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">{{ pending_worker_count }}</span>
+                            <span class="badge-count">{{ pending_worker_count }}</span>
                             {% endif %}
                         </a>
                         <a href="{{ url_for('manage_workers') }}" class="nav-link" id="nav-manage">Manage</a>
+                        <a href="{{ url_for('admin_payments') }}" class="nav-link" id="nav-payments" style="position: relative;">
+                            Payments
+                            {% if pending_payout_count and pending_payout_count > 0 %}
+                            <span class="badge-count">{{ pending_payout_count }}</span>
+                            {% endif %}
+                        </a>
+                        
+                        <!-- Logs Dropdown -->
+                        <div class="nav-dropdown">
+                            <a href="#" class="nav-link">Logs ▾</a>
+                            <div class="dropdown-menu">
+                                <a href="{{ url_for('admin_logs', category='REPORT') }}" class="dropdown-item">Report Logs</a>
+                                <a href="{{ url_for('admin_logs', category='USER_STATUS') }}" class="dropdown-item">User Logs</a>
+                                <a href="{{ url_for('admin_logs', category='APPOINTMENT') }}" class="dropdown-item">Appointment Logs</a>
+                                <a href="{{ url_for('admin_logs', category='PAYMENT') }}" class="dropdown-item">Payment Logs</a>
+                                <div class="dropdown-divider"></div>
+                                <a href="{{ url_for('admin_logs') }}" class="dropdown-item">All Logs</a>
+                            </div>
+                        </div>
+
                         <a href="{{ url_for('logout') }}" class="nav-link nav-link-logout" id="nav-logout">Logout</a>
                     {% elif session.user_id %}
                         <a href="{{ url_for('dashboard') }}" class="nav-link" id="nav-dashboard">Dashboard</a>
                         {% if session.role == 'user' %}
                         <a href="{{ url_for('workers') }}" class="nav-link" id="nav-workers">Find Workers</a>
+                        {% endif %}
+                        {% if session.role == 'worker' %}
+                        <a href="{{ url_for('worker_salary') }}" class="nav-link" id="nav-salary">Earning</a>
                         {% endif %}
                         <a href="{{ url_for('logout') }}" class="nav-link nav-link-logout" id="nav-logout">Logout</a>
                     {% else %}
@@ -46,6 +69,10 @@
                         <a href="{{ url_for('register') }}" class="nav-link nav-link-primary" id="nav-register">Register</a>
                     {% endif %}
                 </div>
+
+                <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
             </div>
         </div>
     </nav>
@@ -103,6 +130,23 @@
     <!-- Global Scripts -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script>
+        // Mobile Navigation Toggle
+        const navToggle = document.getElementById('nav-toggle');
+        const navLinks = document.getElementById('nav-links');
+        
+        if (navToggle && navLinks) {
+            navToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
+            
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!navToggle.contains(e.target) && !navLinks.contains(e.target)) {
+                    navLinks.classList.remove('active');
+                }
+            });
+        }
+
         // Modal functionality
         document.addEventListener('click', function(event) {
             const toggle = event.target.closest('[data-bs-toggle="modal"]');

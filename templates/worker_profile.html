@@ -14,7 +14,7 @@
         <div class="profile-detail-card card border-0 shadow-lg overflow-hidden">
             <div class="profile-detail-header bg-primary text-white p-5 d-flex align-items-center">
                 {% if worker.profile_photo %}
-                <div class="profile-avatar-xlarge bg-white border border-4 border-white shadow-sm me-4" style="background-image: url({% if worker.profile_photo and worker.profile_photo.startswith('http') %}{{ worker.profile_photo }}{% else %}{{ url_for('static', filename='uploads/' + (worker.profile_photo if worker.profile_photo else 'default.png')) }}{% endif %}); background-size: cover; background-position: center; flex-shrink: 0;"></div>
+                <div class="profile-avatar-xlarge border border-4 border-white shadow-sm me-4" style="background: url('{% if worker.profile_photo and worker.profile_photo.startswith('http') %}{{ worker.profile_photo }}{% else %}{{ url_for('static', filename='uploads/' + (worker.profile_photo if worker.profile_photo else 'default.png')) }}{% endif %}') center center / cover no-repeat; flex-shrink: 0;"></div>
                 {% else %}
                 <div class="profile-avatar-xlarge bg-white text-primary me-4">{{ worker.full_name[0]|upper }}</div>
                 {% endif %}
@@ -186,12 +186,34 @@
                 <h5 class="modal-title">Report Worker</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ url_for('report_worker', worker_id=worker._id) }}" method="POST">
+            <form action="{{ url_for('report_worker', worker_id=worker._id) }}" method="POST" enctype="multipart/form-data">
                 <div class="modal-body">
-                    <p class="small text-muted mb-3">Please specify the reason for reporting this worker. Admin will review your report.</p>
+                    <p class="small text-muted mb-3">Please specify the reason for reporting this worker. You can also upload a photo or video as evidence (Max 10MB).</p>
                     <div class="mb-3">
-                        <textarea name="reason" class="form-control" rows="4" placeholder="Type your reason here..." required></textarea>
+                        <label class="form-label small fw-bold">Reason for Report</label>
+                        <textarea name="reason" class="form-control" rows="3" placeholder="Describe the issue..." required></textarea>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Evidence (Optional)</label>
+                        <input type="file" name="evidence" id="evidenceInput" class="form-control" accept="image/*,video/*" onchange="checkFileSize(this)">
+                        <div class="form-text x-small text-muted" id="fileHelp">Max 10MB. Supported: Images and Videos.</div>
+                    </div>
+
+                    <script>
+                        function checkFileSize(input) {
+                            const file = input.files[0];
+                            const helpText = document.getElementById('fileHelp');
+                            if (file && file.size > 10 * 1024 * 1024) {
+                                alert("File is too large! Please choose a file smaller than 10MB.");
+                                input.value = ''; // Reset input
+                                helpText.classList.remove('text-muted');
+                                helpText.classList.add('text-danger', 'fw-bold');
+                            } else {
+                                helpText.classList.remove('text-danger', 'fw-bold');
+                                helpText.classList.add('text-muted');
+                            }
+                        }
+                    </script>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>

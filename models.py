@@ -154,6 +154,8 @@ class Worker:
             'profile_photo': profile_photo_path,
             'is_active': False,
             'is_banned': False,
+            'ban_until': None, # new field for temporary bans
+            'income_balance': 0.0, # new field for payout tracking
             'updated_at': datetime.utcnow()
         }
 
@@ -247,10 +249,21 @@ class Worker:
             return new_status
         return None
 
-    def update_ban_status(self, worker_id, is_banned):
+    def update_ban_status(self, worker_id, is_banned, duration_days=None):
+        update_data = {
+            'is_banned': is_banned,
+            'updated_at': datetime.utcnow()
+        }
+        
+        if is_banned and duration_days:
+            from datetime import timedelta
+            update_data['ban_until'] = datetime.utcnow() + timedelta(days=duration_days)
+        else:
+            update_data['ban_until'] = None
+
         self.collection.update_one(
             {'_id': ObjectId(worker_id)},
-            {'$set': {'is_banned': is_banned, 'updated_at': datetime.utcnow()}}
+            {'$set': update_data}
         )
 
     def delete(self, worker_id):
@@ -360,11 +373,16 @@ class Report:
         self.collection = db.reports
         self.db = db
 
-    def create(self, worker_id, reporter_id, reason):
+    def create(self, worker_id, reporter_id, reason, customer_name=None, customer_mobile=None, worker_name=None, worker_mobile=None, evidence_url=None):
         report_data = {
             'worker_id': worker_id,
             'reporter_id': reporter_id,
             'reason': reason,
+            'customer_name': customer_name,
+            'customer_mobile': customer_mobile,
+            'worker_name': worker_name,
+            'worker_mobile': worker_mobile,
+            'evidence_url': evidence_url,
             'status': 'pending', # pending, resolved
             'created_at': datetime.utcnow()
         }
@@ -438,6 +456,102 @@ class Bill:
 
     def find_by_user(self, user_id):
         return list(self.collection.find({'user_id': user_id}).sort('created_at', -1))
+
+    def get_unpaid_by_worker(self, worker_id):
+        """Get all bills for a worker that are paid by customer but not yet withdrawn by worker"""
+        return list(self.collection.find({
+            'worker_id': worker_id, 
+            'paid': True,
+            'withdrawn': {'$ne': True}
+        }).sort('created_at', -1))
+
+    def mark_withdrawn(self, bill_ids):
+        """Mark a list of bills as withdrawn"""
+        # Clean and validate IDs
+        valid_ids = []
+        for bid in bill_ids:
+            try:
+                valid_ids.append(ObjectId(bid))
+            except:
+                continue
+                
+        if not valid_ids:
+            return
+            
+        self.collection.update_many(
+            {'_id': {'$in': valid_ids}},
+            {'$set': {'withdrawn': True, 'withdrawn_at': datetime.utcnow()}}
+        )
+
+
+class Withdrawal:
+    """Model for worker payout requests"""
+    def __init__(self, db):
+        self.collection = db.withdrawals
+        self.db = db
+
+    def create(self, worker_id, worker_name, amount, method, details, fee_fraction=0.10):
+        platform_fee = amount * fee_fraction
+        final_amount = amount - platform_fee
+        
+        withdrawal_data = {
+            'worker_id': worker_id,
+            'worker_name': worker_name,
+            'requested_amount': amount,
+            'platform_fee': platform_fee,
+            'final_amount': final_amount,
+            'method': method, # bank, upi
+            'details': details, # {account_no, ifsc, name} or {upi_id, name}
+            'status': 'pending', # pending, completed
+            'created_at': datetime.utcnow()
+        }
+        result = self.collection.insert_one(withdrawal_data)
+        return str(result.inserted_id)
+
+    def get_pending(self):
+        return list(self.collection.find({'status': 'pending'}).sort('created_at', -1))
+
+    def get_by_worker(self, worker_id):
+        return list(self.collection.find({'worker_id': worker_id}).sort('created_at', -1))
+
+    def mark_completed(self, withdrawal_id):
+        self.collection.update_one(
+            {'_id': ObjectId(withdrawal_id)},
+            {'$set': {'status': 'completed', 'completed_at': datetime.utcnow()}}
+        )
+
+    def find_by_id(self, withdrawal_id):
+        try:
+            return self.collection.find_one({'_id': ObjectId(withdrawal_id)})
+        except:
+            return None
+
+
+class AuditLog:
+    """Model for system activity logging"""
+    def __init__(self, db):
+        self.collection = db.audit_logs
+        self.db = db
+
+    def log(self, category, action, user_email, details):
+        """
+        Log an important system event
+        Categories: REPORT, USER_STATUS, PAYMENT, APPOINTMENT
+        """
+        log_data = {
+            'category': category,
+            'action': action,
+            'performed_by': user_email,
+            'details': details,
+            'created_at': datetime.utcnow()
+        }
+        self.collection.insert_one(log_data)
+
+    def get_logs(self, category=None, limit=100):
+        query = {}
+        if category:
+            query['category'] = category
+        return list(self.collection.find(query).sort('created_at', -1).limit(limit))
 
 
 class Authentication:

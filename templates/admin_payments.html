@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Worker Payments - CrewHub Admin{% endblock %}
+
+{% block content %}
+<section class="admin-payments py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-5 admin-page-header">
+            <div>
+                <h1 class="h2 mb-1">Withdrawal Requests</h1>
+                <p class="text-muted">Manage worker payouts and platform commission</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm overflow-hidden">
+            <div class="card-header-premium d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">Pending Payouts</h2>
+                {% if withdrawals %}<span class="badge bg-primary text-white">{{ withdrawals|length }} Pending</span>{% endif %}
+            </div>
+            <div class="card-body p-0">
+                {% if withdrawals %}
+                <div class="table-responsive">
+                    <table class="table mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Worker</th>
+                                <th>Requested</th>
+                                <th>Platform Fee (10%)</th>
+                                <th>Payout Amount</th>
+                                <th>Method</th>
+                                <th class="text-end pe-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in withdrawals %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-bold">{{ record.worker_name }}</div>
+                                    <div class="x-small text-muted">{{ record.worker_id }}</div>
+                                </td>
+                                <td><span class="fw-bold">₹{{ "%.2f"|format(record.requested_amount) }}</span></td>
+                                <td><span class="text-danger">- ₹{{ "%.2f"|format(record.platform_fee) }}</span></td>
+                                <td><span class="text-success fw-bold">₹{{ "%.2f"|format(record.final_amount) }}</span></td>
+                                <td>
+                                    <span class="badge bg-info-light text-info">{{ record.method|upper }}</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#paymentModal{{ record._id }}">View & Process</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="py-5 text-center text-muted">
+                    <p class="mb-0">No pending withdrawal requests.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Payment Modals -->
+{% for record in withdrawals %}
+<div class="modal fade" id="paymentModal{{ record._id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Process Payout: {{ record.worker_name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="p-3 bg-light rounded mb-4">
+                    <h6 class="text-muted small text-uppercase fw-bold mb-3">Payment Details ({{ record.method|upper }})</h6>
+                    {% if record.method == 'bank' %}
+                        <div class="mb-2"><strong>Account Holder:</strong> {{ record.details.name }}</div>
+                        <div class="mb-2"><strong>Account Number:</strong> {{ record.details.account_no }}</div>
+                        <div><strong>IFSC Code:</strong> {{ record.details.ifsc }}</div>
+                    {% else %}
+                        <div class="mb-2"><strong>Account Holder:</strong> {{ record.details.name }}</div>
+                        <div><strong>UPI ID:</strong> {{ record.details.upi_id }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
+                    <span>Requested Amount:</span>
+                    <span class="fw-bold">₹{{ "%.2f"|format(record.requested_amount) }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
+                    <span>Platform Fee (10%):</span>
+                    <span class="text-danger">- ₹{{ "%.2f"|format(record.platform_fee) }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center p-2 bg-success-light mt-2 rounded">
+                    <span class="fw-bold text-success">Total to Transfer:</span>
+                    <span class="fw-bold text-success h5 mb-0">₹{{ "%.2f"|format(record.final_amount) }}</span>
+                </div>
+                
+                <p class="small text-muted mt-4">
+                    <svg class="icon icon-xs me-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    By clicking "Mark as Paid", you confirm that the bank transfer or UPI payment has been successfully completed. This will notify the worker.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('admin_complete_payment', withdrawal_id=record._id) }}" method="POST">
+                    <button type="submit" class="btn btn-success">Confirm & Mark as Paid</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

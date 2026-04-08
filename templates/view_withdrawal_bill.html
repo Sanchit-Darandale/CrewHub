@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Withdrawal Statement - CrewHub{% endblock %}
+
+{% block content %}
+<section class="view-bill py-5">
+    <div class="container">
+        <div class="card border-0 shadow-lg overflow-hidden" style="max-width: 800px; margin: 0 auto; border-radius: 20px;">
+            <!-- Header -->
+            <div class="bg-primary text-white p-5 text-center position-relative">
+                <div class="mb-2 text-uppercase fw-bold opacity-75 letter-spacing-1 small">CrewHub Withdrawal Statement</div>
+                <h1 class="h2 mb-0">Total Payout: ₹{{ "%.2f"|format(record.final_amount) }}</h1>
+                
+                {% if record.status == 'completed' %}
+                <div class="paid-stamp">PAID</div>
+                {% endif %}
+            </div>
+
+            <!-- Body -->
+            <div class="p-5">
+                <div class="row mb-5">
+                    <div class="col-sm-6">
+                        <h6 class="text-muted text-uppercase x-small fw-bold mb-3">Service Provider (To)</h6>
+                        <h5 class="mb-1 text-dark">{{ record.worker_name }}</h5>
+                        <p class="text-muted small mb-0">Worker ID: {{ record.worker_id }}</p>
+                    </div>
+                    <div class="col-sm-6 text-sm-end">
+                        <h6 class="text-muted text-uppercase x-small fw-bold mb-3">Payment Details</h6>
+                        <h5 class="mb-1 text-primary">Method: {{ record.method|upper }}</h5>
+                        {% if record.method == 'bank' %}
+                            <p class="text-muted small mb-0">Acc: {{ record.details.account_no }}</p>
+                            <p class="text-muted small mb-0">IFSC: {{ record.details.ifsc }}</p>
+                        {% else %}
+                            <p class="text-muted small mb-0">UPI ID: {{ record.details.upi_id }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="text-muted text-uppercase x-small fw-bold mb-3">Payout Breakdown</h6>
+                    <div class="table-responsive">
+                        <table class="table border">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Work Performed</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold">Net Earnings for Current Cycle</div>
+                                        <div class="x-small text-muted">Aggregated income from all successfully completed/paid appointments</div>
+                                    </td>
+                                    <td class="text-end fw-bold">₹{{ "%.2f"|format(record.requested_amount) }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-danger fw-bold">Platform Charges ({{ config['PLATFORM_FEE_PERCENTAGE'] }}% Platform Fee)</td>
+                                    <td class="text-end text-danger fw-bold">- ₹{{ "%.2f"|format(record.platform_fee) }}</td>
+                                </tr>
+                            </tbody>
+                            <tfoot class="bg-light fw-bold">
+                                <tr>
+                                    <td class="text-primary h5 mb-0">Final Payout Amount</td>
+                                    <td class="text-end text-primary h5 mb-0">₹{{ "%.2f"|format(record.final_amount) }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-light rounded text-center mb-5">
+                    <div class="small fw-medium text-muted">Statement Generated for {{ record.created_at.strftime('%B %Y') }}</div>
+                    <div class="x-small text-muted mt-1">Transaction ID: {{ record._id }}</div>
+                </div>
+
+                <div class="text-center no-print">
+                    <button onclick="window.print()" class="btn btn-outline-secondary me-2">
+                        <svg class="icon icon-xs me-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                        Print Statement
+                    </button>
+                    <a href="{{ url_for('worker_salary') }}" class="btn btn-link text-muted">Back to Earnings</a>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="bg-light p-4 text-center border-top">
+                <p class="x-small text-muted mb-0">This is a system-generated withdrawal statement for CrewHub Platform. {{ config['PLATFORM_FEE_PERCENTAGE'] }}% platform fee is applied to maintain the platform infrastructure and support.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .paid-stamp {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        border: 4px solid #fff;
+        color: #fff;
+        font-size: 24px;
+        font-weight: 900;
+        padding: 5px 20px;
+        border-radius: 8px;
+        transform: rotate(15deg);
+        opacity: 0.8;
+    }
+    @media print {
+        .no-print { display: none; }
+        .view-bill { padding: 0; }
+        .card { box-shadow: none !important; border: 1px solid #eee; }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}System Logs - CrewHub Admin{% endblock %}
+
+{% block content %}
+<section class="admin-logs py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-5 admin-page-header">
+            <div>
+                <h1 class="h2 mb-1">System Audit Logs</h1>
+                <p class="text-muted">Tracking platform activities and administrative actions</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body py-3">
+                <div class="d-flex gap-2 flex-wrap align-items-center">
+                    <span class="small fw-bold text-muted text-uppercase me-2">Filter By:</span>
+                    <a href="{{ url_for('admin_logs') }}" class="btn btn-xs {% if not current_category %}btn-primary{% else %}btn-outline-primary{% endif %}">All Logs</a>
+                    <a href="{{ url_for('admin_logs', category='REPORT') }}" class="btn btn-xs {% if current_category == 'REPORT' %}btn-primary{% else %}btn-outline-primary{% endif %}">Reports</a>
+                    <a href="{{ url_for('admin_logs', category='USER_STATUS') }}" class="btn btn-xs {% if current_category == 'USER_STATUS' %}btn-primary{% else %}btn-outline-primary{% endif %}">User Status</a>
+                    <a href="{{ url_for('admin_logs', category='APPOINTMENT') }}" class="btn btn-xs {% if current_category == 'APPOINTMENT' %}btn-primary{% else %}btn-outline-primary{% endif %}">Appointments</a>
+                    <a href="{{ url_for('admin_logs', category='PAYMENT') }}" class="btn btn-xs {% if current_category == 'PAYMENT' %}btn-primary{% else %}btn-outline-primary{% endif %}">Payments</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm overflow-hidden">
+            <div class="card-body p-0">
+                {% if logs %}
+                <div class="table-responsive">
+                    <table class="table mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Timestamp</th>
+                                <th>Category</th>
+                                <th>Action</th>
+                                <th>Performed By</th>
+                                <th class="pe-4">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="small fw-medium text-dark">{{ log.created_at.strftime('%d %b, %I:%M %p') }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge 
+                                        {% if log.category == 'REPORT' %}bg-danger-light text-danger
+                                        {% elif log.category == 'USER_STATUS' %}bg-warning-light text-warning
+                                        {% elif log.category == 'PAYMENT' %}bg-success-light text-success
+                                        {% else %}bg-info-light text-info{% endif %} 
+                                        x-small">
+                                        {{ log.category }}
+                                    </span>
+                                </td>
+                                <td class="fw-bold small">{{ log.action }}</td>
+                                <td class="small">{{ log.performed_by }}</td>
+                                <td class="pe-4">
+                                    <div class="text-muted small" style="max-width: 400px; white-space: normal;">{{ log.details }}</div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="py-5 text-center text-muted">
+                    <p class="mb-0">No logs found for this category.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

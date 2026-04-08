@@ -1,281 +1,110 @@
-# CrewHub - Service Marketplace Platform
+# CrewHub - Advanced Service Marketplace Platform
 
-## Project Overview
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-3.0-lightgrey?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-4.6-green?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-CrewHub is a comprehensive service marketplace web application that connects workers (electricians, plumbers, carpenters, etc.) with people who need their services. The platform supports three distinct user roles: Users, Worker, admin each with tailored functionality.
+CrewHub is a high-performance, full-stack service marketplace that connects skilled professionals (Electricians, Plumbers, Carpenters, etc.) with local customers. Built with a robust **MVC architecture**, the platform focuses on trust, security, and absolute financial transparency.
 
-### Worker Dashboard
-  remove experience add rating
-  status toggle option
-  recent feedback
-  appointments
+---
 
-### Admin Login
-  dashboard - total user, worker, active workers, banned workers, search by worker id, pending reports, view reports
-  manage 
-  reports
+## 🚀 Key Modules
 
-### add Avaliable city in register & remove experience
-### SEARCH BY CITY
+### 👤 Customer Experience
+*   **Smart Discovery**: Multi-filter search (Category, City, Pincode) with real-time availability.
+*   **Multimedia Reporting**: A unique dispute resolution system allowing users to file reports with **integrated Image/Video evidence** powered by Cloudinary.
+*   **Appointment Lifecycle**: End-to-end booking flow from request to professional invoice generation.
 
-### VIEW PROFILE + Make appointment
+### ⚒️ Worker Earning Hub
+*   **Dynamic Earnings Tracking**: Real-time income calculation based on "Verified Invoices."
+*   **Localized Payout Windows**: Supports multiple withdrawal dates (e.g., 5th, 15th, 25th) synchronized with the **Asia/Kolkata** timezone using `pytz`.
+*   **Digital Statements**: Automated generation of payout slips with dynamic platform fee deduction.
 
-## RATING , LOCATION, STATUS 
-# RATINGS AND REVIEW ( giving / Writing )
-# RECENT REVIEW
-# REPORT WORKER
-# WORKER STATS (Ratings / reviews)
-# STATUS
-# REMOVE EXPERIENCE
+### 🛡️ Admin Command Center
+*   **Verification Engine**: A secure portal for approving/rejecting new workers based on Aadhar and Certificate verification.
+*   **Granular Sanctions**: Advanced banning system (Temporary/Permanent) with automated unban logic upon expiration.
+*   **Audit Logging**: Comprehensive system-wide logging for all payments, appointments, and status changes.
 
-## Target Market Identification
+---
 
-- **B2C (Primary consumer segment):**
-  - Homeowners, renters, and individuals needing home maintenance or repairs.
-  - Examples: busy professionals, elderly residents, students.
+## 🛠️ Technology Stack
 
-- **B2B (Commercial segment):**
-  - Small businesses, local retail, and SMEs that need maintenance or facility services.
+| Layer | Technology |
+| :--- | :--- |
+| **Backend** | Python 3.10+, Flask |
+| **Database** | MongoDB (Atlas) |
+| **Media** | Cloudinary (Secure multimedia hosting) |
+| **Security** | Werkzeug (Password Hashing), Session RBAC |
+| **Timezone** | `pytz` (Precision IST scaling) |
+| **Styling** | Vanilla CSS3 (Custom Design System) |
 
-- **B2G (Institutional segment):**
-  - Residential societies, housing associations, or municipal agencies coordinating area services.
+---
 
-- **Recommended initial focus:** Launch with B2C (urban homeowners and renters) plus B2G (residential societies). Societies provide recurring demand and faster uptake via community-level adoption.
+## ⚙️ Configuration
 
-## Market Segmentation
+The platform's core behavior is managed through `config.py`. Key variables include:
 
-- **Geographic:**
-  - Phase 1: Single-city pilot (focus on one metro area). Lower operational overhead and easier local marketing.
-  - Phase 2: Expand to nearby cities and then region/statewide.
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `WITHDRAWAL_DATES` | Days of the month when payout windows open. | `[5, 15, 25]` |
+| `PLATFORM_FEE_PERCENTAGE` | Dynamic platform commission rate. | `15` |
+| `CLOUDINARY_URL` | Cloudinary connection string for media uploads. | *Required* |
+| `MONGO_URI` | MongoDB Atlas cluster connection string. | *Required* |
 
-- **Demographic:**
-  - Primary: Adults 25–60 (homeowners, working professionals), middle to upper-middle income.
-  - Secondary: Society managers/secretaries and small-business facility managers.
+---
 
-- **Usage-based:**
-  - Regular users: Society managers, property managers, businesses (recurring maintenance).
-  - Occasional users: Individual residents with occasional repair needs.
+## 📦 Installation & Quick Start
 
-- **Initial launch segment (focus):** Urban residential societies in a single city (B2G-first within the broader B2C/B2G mix) to capture recurring contracts and resident sign-ups.
+### 1. Prerequisite
+Ensure you have **Python 3.10+** and a **MongoDB Atlas** account.
 
-## Operational & Growth Suggestions
+### 2. Installation
+```bash
+# Clone the repository
+git clone https://github.com/Sanchit-Darandale/CrewHub.git
+cd CrewHub
 
-- **MVP (current):** Discovery, registration, role-based dashboards, pincode-based search, secure login. Good for a pilot in one city.
+# Set up virtual environment (Optional but Recommended)
+python -m venv venv
+source venv/bin/activate  # Windows: venv\\Scripts\\activate
 
-- **Next features to prioritize:**
-  1. Booking / job request flow (user books a worker, scheduling)
-  2. Ratings & reviews for quality signals
-  3. In-app messaging or phone-masked contact
-  4. Admin dashboard and analytics
-
-
-## Monetization (brief)
-- Commission on transactions (percentage per job)
-- Subscription plans for societies / businesses for premium features
-- Featured listings / promoted worker profiles for increased visibility
-
-## Technology Stack
-
-### Backend
-- **Framework**: Flask (Python)
-- **Database**: MongoDB
-- **Authentication**: Session-based with hashed passwords (Werkzeug)
-- **Architecture**: MVC Pattern
-- **Environment**: `python-dotenv` for environment variables
-
-
-### Frontend
-- **HTML5**: Semantic markup
-- **CSS3**: Custom responsive design
-- **JavaScript**: Vanilla JS for client-side functionality
-
-### Key Features
-- Role-based authentication and authorization
-- Worker discovery by service type and location, rating, etc
-- Profile management for all user types
-- Real-time search and filtering
-- Responsive design for all devices
-
-### Key benefits:
-  - **Efficiency:** Faster discovery through indexed search and filters.
-  - **Cost saving:** Societies and repeat B2B customers gain negotiated/bulk options.
-  - **Automation:** Role-based dashboards reduce manual coordination overhead.
-  - **Safety & Trust:** Password hashing, role separation, and identity-backed profiles.
-  - **Scalability:** Modular MVC code structure and database indexes for performant queries.
-
-## Project Structure
-
-```
-CrewHub/
-├── app.py                      # Main Flask application (Controller)
-├── models.py                   # Database models (Model)
-├── config.py                   # Configuration settings
-├── requirements.txt            # Python dependencies
-├── static/
-│   ├── css/
-│   │   └── style.css          # Complete stylesheet
-│   └── js/
-│       └── main.js            # Client-side JavaScript
-└── templates/                  # HTML templates (View)
-    ├── base.html              # Base layout template
-    ├── index.html             # Homepage
-    ├── admin.html             # Admin Dashboard
-    ├── login.html             # Login page
-    ├── register.html          # Role selection
-    ├── register_user.html     # User registration
-    ├── register_worker.html   # Worker registration
-    ├── register_society.html  # Society registration
-    ├── dashboard.html         # Role-based dashboard
-    ├── workers.html           # Worker listing
-    └── worker_profile.html    # Worker profile page
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-## Using the Application
-
-### 1. Register an Account
-
-**Register as User:**
-1. Click "Register" → "Register as User"
-2. Fill in all required fields
-3. Submit the form
-
-**Register as Worker:**
-1. Click "Register" → "Register as Worker"
-2. Select your service type
-3. Fill in experience and other details
-4. Submit the form
-
-### 2. Login
-1. Go to login page
-2. Enter your email and password
-3. You'll be redirected to your role-specific dashboard
-
-**Login as Admin:**
-1. Click "Login" → "Admin Creditials"
-2. Admin dashboard
-3. make changes as per report 
-
-### 3. User Features
-
-- Search workers by service type, ratings and pincode (add more soon)
-- View worker profiles
-- Access contact information (phone/email)
-- send request to worker
-- Browse workers in your area
-
-### 4. Worker Features
-
-- View your profile
-- Check visibility status
-- Get client request 
-- See your profile information
-
-
-### Available Worker Types
-- Electrician
-- Plumber
-- Carpenter
-- Painter
-- Mason
-- Welder
-- Gardener
-- House Cleaning
-- Pest Control
-- AC Repair
-- Other i will add soon
-
-## API Endpoints
-
-| Route | Method | Description |
-|-------|--------|-------------|
-| `/` | GET | Homepage |
-| `/login` | GET, POST | Login page |
-| `/register` | GET | Role selection |
-| `/register/user` | GET, POST | User registration |
-| `/register/worker` | GET, POST | Worker registration |
-| `/register/society` | GET, POST | Society registration |
-| `/dashboard` | GET | Role-based dashboard |
-| `/workers` | GET | Worker listing with filters |
-| `/worker/<id>` | GET | Individual worker profile |
-| `/logout` | GET | Logout and clear session |
-
-I will add the remaining endpoints when I get some free time.
-
-## Database Collections
-
-### users
-```javascript
-{
-  _id: ObjectId,
-  full_name: String,
-  mobile: String,
-  email: String (unique),
-  address: String,
-  pincode: String,
-  password: String (hashed),
-  role: "user",
-  created_at: Date,
-  updated_at: Date
-}
+### 3. Environment Setup
+Create a `.env` file in the root directory:
+```env
+SECRET_KEY=your_secret_key
+MONGO_URI=your_mongodb_uri
+CLOUDINARY_URL=your_cloudinary_url
 ```
 
-### workers
-```javascript
-{
-  _id: ObjectId,
-  full_name: String,
-  mobile: String,
-  email: String (unique),
-  address: String,
-  pincode: String,
-  worker_type: String,
-  password: String (hashed),
-  role: "worker",
-  is_active: Boolean,
-  created_at: Date,
-  updated_at: Date
-}
+### 4. Launch
+```bash
+python app.py
 ```
+Access the platform at `http://localhost:5000`.
 
-## Security Features
+---
 
-1. **Password Hashing**: All passwords are hashed using Werkzeug's security functions
-2. **Session Management**: Secure session-based authentication
-3. **Role-Based Access Control**: Different permissions for each user role
-4. **Input Validation**: Both client-side and server-side validation
-5. **CSRF Protection**: Built into Flask forms
+## 📂 Architecture Overview
 
-## Scalability Considerations
+*   `app.py`: The Controller layer, managing routing and business logic.
+*   `models.py`: The data layer, encapsulating MongoDB operations for all entities.
+*   `utils.py`: Utility functions including SMTP mailers and precision helpers.
+*   `static/`: Contains the optimized CSS design system and frontend assets.
+*   `templates/`: Jinja2 templates following a modular inheritance pattern.
 
-The application is designed with scalability in mind:
+---
 
-1. **Database Indexing**: Indexes on email, pincode, and worker_type for faster queries
-2. **Modular Architecture**: Separate models, views, and controllers
-3. **RESTful Design**: Clean URL structure
-4. **Connection Pooling**: MongoDB driver handles connection pooling automatically
-5. **Session Management**: Can be scaled with Redis/Memcached
+## 📜 Development & Support
 
-## Future Enhancements
+Developed as a modern service ecosystem demonstration.
 
-Potential features for commercialization:
+**Main Developer**: [Sanchit Darandale](https://github.com/Sanchit-Darandale)  
+**Agentic AI Support**: Antigravity AI  
 
-1. **Rating & Review System**: User feedback for workers
-2. **Real-time Chat**: In-app messaging between users and workers
-3. **Booking System**: Schedule appointments
-4. **Worker Verification**: Document upload and verification
-5. **Analytics Dashboard**: Business insights for admin
-6. **Multi-language Support**: Localization
-
-## License
-
-This project is developed as an academic project for Technology Commercialization and Startup Development.
-
-## Credits
-
-Developed as a complete full-stack web application demonstrating:
-- Modern web development practices
-- MVC architecture
-- Database design
-- User authentication & authorization
-- Responsive design
-- Business logic implementation
+---
+*Created for the Technology Commercialization & Startup Development Project.*

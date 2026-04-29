@@ -9,7 +9,7 @@ class Config:
     
     CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
 
-    WITHDRAWAL_DATES = [5, 15, 25] 
+    WITHDRAWAL_DATES = [5, 15, 29, 25] 
     PLATFORM_FEE_PERCENTAGE = 15
 
     PERMANENT_SESSION_LIFETIME = timedelta(hours=24)
